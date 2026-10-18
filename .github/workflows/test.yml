@@ -21,14 +21,17 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      # the formula from this checkout, installed as a tap would be, then its own test block
+      # every formula from this checkout, installed as a tap would be, then its own test block
       - name: brew install and test
         run: |
           [ -x /home/linuxbrew/.linuxbrew/bin/brew ] && eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-          brew tap michelsalib/netbeagle "$GITHUB_WORKSPACE"
-          brew install michelsalib/netbeagle/netbeagle
-          brew test michelsalib/netbeagle/netbeagle
-          netbeagle list
+          brew tap michelsalib/nethound "$GITHUB_WORKSPACE"
+          for f in Formula/*.rb; do
+            name=$(basename "$f" .rb)
+            brew install "michelsalib/nethound/$name"
+            brew test "michelsalib/nethound/$name"
+            "$name" list
+          done
       - name: Homebrew logs
         if: failure()
-        run: cat ~/.cache/Homebrew/Logs/netbeagle/* ~/Library/Logs/Homebrew/netbeagle/* 2>/dev/null || true
+        run: cat ~/.cache/Homebrew/Logs/*/* ~/Library/Logs/Homebrew/*/* 2>/dev/null || true
